@@ -8,8 +8,15 @@ var multer = require('multer');
 var upload = multer({ dest: __dirname+'/uploads/' });
 var iconvLite = require('iconv-lite');
 var crypto = require('crypto');
+var session = require('express-session');
 
 app.use(bodyParser.urlencoded({extended : true}));
+app.use(session({
+    key: 'sid',
+    secret: process.env.KEY,
+    resave: false,
+    saveUninitialized: true
+}));
 
 function getUserIP(req){
     var ipAddress;
@@ -48,26 +55,29 @@ function getDownloadFilename(req, filename) {
 }
 
 app.post('/upload', upload.array('file',100), function(req, res){
-    Client.connect('mongodb://localhost:27017/dropbox', function(error, db) {
-        if(error) console.log(error);
-        else {
-            var cnt=0;
-            for(var i=0;i<req.files.length;i++){
-                var json=req.files[i];
-                json._id=crypto.createHash('md5').update(String(json.filename)).digest("hex");
-                json.ip=getUserIP(req);
-                json.date=String(Date.now());
-                db.collection('file').insertOne(json,function(doc, err){
-                    if(err) console.log(err);
-                    cnt+=1;
-                    if(cnt==req.files.length) {
-                        db.close();
-                        res.send("ok");
-                    }
-                });
+    if(req.session.user_id==null) res.send("fail");
+    else{
+        Client.connect('mongodb://localhost:27017/dropbox', function(error, db) {
+            if(error) console.log(error);
+            else {
+                var cnt=0;
+                for(var i=0;i<req.files.length;i++){
+                    var json=req.files[i];
+                    json._id=crypto.createHash('md5').update(String(json.filename)).digest("hex");
+                    json.ip=getUserIP(req);
+                    json.date=String(Date.now());
+                    db.collection('file').insertOne(json,function(doc, err){
+                        if(err) console.log(err);
+                        cnt+=1;
+                        if(cnt==req.files.length) {
+                            db.close();
+                            res.send("ok");
+                        }
+                    });
+                }
             }
-        }
-    });
+        });
+    }
 });
   
 app.get('/download/:id', function(req, res){
@@ -108,8 +118,8 @@ app.post('/list', function(req, res){
                     list.push(data);
                 }else{
                     var jsonData = JSON.stringify(list);
-                    res.send(jsonData);
                     db.close();
+                    res.send(jsonData);
                 }
             });
         }
@@ -125,6 +135,25 @@ app.post('/delete', function(req, res){
                 if(err) console.log(err);
                 db.close();
                 res.send("ok");
+            });
+        }
+    });
+});
+
+app.post('/login', function(req, res){
+    var id=String(req.body.id);
+    var pw=String(req.body.pw);
+    Client.connect('mongodb://localhost:27017/dropbox', function(error, db) {
+        if(error) console.log(error);
+        else {
+            db.collection('user').find({$and:[{id:id},{pw:crypto.createHash('md5').update(String(pw)).digest("hex")}]}).toArray(function(err, doc){
+                if(err) console.log(err);
+                if(doc[0]){
+                    req.session.user_id=doc[0].name;
+                    db.close();
+                    res.send("ok");
+                }
+                else res.send("fail");
             });
         }
     });
