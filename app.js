@@ -14,6 +14,7 @@ var upload = multer({ dest: __dirname+'/uploads/',
                     db.collection('user').find({_id:id}).count(function(err, doc){
                         console.log(doc);
                         if(doc==0) cb(null, false);
+                        else cb(null, true);
                         db.close();
                     });
                 }
