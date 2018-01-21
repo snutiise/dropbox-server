@@ -56,7 +56,7 @@ function getDownloadFilename(req, filename) {
 
 app.post('/upload', upload.array('file',100), function(req, res){
     if(req.session.user_id==null) {
-        req.pause();
+        req.connection.destroy();
         res.status = 404;
         res.end('fail');
     }
