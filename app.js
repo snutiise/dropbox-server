@@ -11,10 +11,9 @@ var crypto = require('crypto');
 var session = require('express-session');
 
 app.use(bodyParser.urlencoded({extended : true}));
-console.log(process.env);
 app.use(session({
     key: 'sid',
-    secret: process.env["KEY"],
+    secret: process.env.KEY,
     resave: false,
     saveUninitialized: true
 }));
@@ -56,7 +55,11 @@ function getDownloadFilename(req, filename) {
 }
 
 app.post('/upload', upload.array('file',100), function(req, res){
-    if(req.session.user_id==null) res.send("fail");
+    if(req.session.user_id==null) {
+        req.pause();
+        res.status = 404;
+        res.end('fail');
+    }
     else{
         Client.connect('mongodb://localhost:27017/dropbox', function(error, db) {
             if(error) console.log(error);
@@ -132,10 +135,16 @@ app.post('/delete', function(req, res){
     Client.connect('mongodb://localhost:27017/dropbox', function(error, db) {
         if(error) console.log(error);
         else {
-            db.collection('file').deleteOne({_id:key},function(err, obj){
+            db.collection('file').finfindOned({_id:key}, function(err, obj){
                 if(err) console.log(err);
-                db.close();
-                res.send("ok");
+                if(obj){
+                    fs.unlink(obj.path);
+                    db.collection('file').deleteOne({_id:key},function(err, obj){
+                        if(err) console.log(err);
+                        db.close();
+                        res.send("ok");
+                    });
+                }
             });
         }
     });
