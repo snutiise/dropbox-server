@@ -11,7 +11,7 @@ var crypto = require('crypto');
 var session = require('express-session');
 
 app.use(bodyParser.urlencoded({extended : true}));
-console.log(process.env["KEY"]);
+console.log(process.env);
 app.use(session({
     key: 'sid',
     secret: process.env["KEY"],
