@@ -124,7 +124,7 @@ app.post('/delete', function(req, res){
             db.collection('file').deleteOne({_id:key},function(err, obj){
                 if(err) console.log(err);
                 db.close();
-                res.send(ok);
+                res.send("ok");
             });
         }
     });
