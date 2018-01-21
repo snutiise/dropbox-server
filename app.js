@@ -101,6 +101,9 @@ app.post('/list', function(req, res){
                 if(obj){
                     var data = new Object();
                     data.code=obj._id;
+                    data.type=obj.mimetype;
+                    data.size=obj.size;
+                    data.date=obj.date;
                     data.filename=obj.originalname;
                     list.push(data);
                 }else{
