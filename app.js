@@ -161,7 +161,7 @@ app.post('/login', function(req, res){
             db.collection('user').find({$and:[{id:id},{pw:pw}]}).toArray(function(err, doc){
                 if(err) console.log(err);
                 if(doc[0]){
-                    req.session.user_id=doc[0].name;
+                    req.session.user_id=doc[0].id;
                     db.close();
                     res.send("ok");
                 }
