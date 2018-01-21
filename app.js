@@ -142,7 +142,7 @@ app.post('/delete', function(req, res){
     Client.connect('mongodb://localhost:27017/dropbox', function(error, db) {
         if(error) console.log(error);
         else {
-            db.collection('file').finfindOned({_id:key}, function(err, obj){
+            db.collection('file').finfindOne({_id:key}, function(err, obj){
                 if(err) console.log(err);
                 if(obj){
                     fs.unlink(obj.path);
