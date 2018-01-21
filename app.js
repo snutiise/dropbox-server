@@ -8,12 +8,11 @@ var multer = require('multer');
 var upload = multer({ dest: __dirname+'/uploads/', 
         fileFilter: function(req, file, cb){
             var id = String(req.body.id);
-            console.log("test");
-            console.log(id);
             Client.connect('mongodb://localhost:27017/dropbox', function(error, db) {
                 if(error) console.log(error);
                 else {
                     db.collection('user').find({_id:id}).count(function(err, doc){
+                        console.log(doc);
                         if(doc==0) cb(null, false);
                         db.close();
                     });
