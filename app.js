@@ -158,7 +158,7 @@ app.post('/login', function(req, res){
     Client.connect('mongodb://localhost:27017/dropbox', function(error, db) {
         if(error) console.log(error);
         else {
-            db.collection('user').find({$and:[{id:id},{pw:crypto.createHash('md5').update(String(pw)).digest("hex")}]}).toArray(function(err, doc){
+            db.collection('user').find({$and:[{id:id},{pw:pw}]}).toArray(function(err, doc){
                 if(err) console.log(err);
                 if(doc[0]){
                     req.session.user_id=doc[0].name;
