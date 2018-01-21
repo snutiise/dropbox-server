@@ -6,9 +6,9 @@ var bodyParser = require('body-parser');
 var app = express();
 var multer = require('multer'); 
 var upload = multer({ dest: __dirname+'/uploads/', 
-        onFileUploadStart: function(file, req, res){
+        fileFilter: function(req, file, cb){
             if(req.session.user_id==null) {
-            return false;
+                cb(null, false);
             }
         }   
     });
