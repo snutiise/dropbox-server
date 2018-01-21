@@ -5,7 +5,13 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var multer = require('multer'); 
-var upload = multer({ dest: __dirname+'/uploads/' });
+var upload = multer({ dest: __dirname+'/uploads/', 
+        onFileUploadStart: function(file, req, res){
+            if(req.session.user_id==null) {
+            return false;
+            }
+        }   
+    });
 var iconvLite = require('iconv-lite');
 var crypto = require('crypto');
 var session = require('express-session');
@@ -55,11 +61,7 @@ function getDownloadFilename(req, filename) {
 }
 
 app.post('/upload', upload.array('file',100), function(req, res){
-    if(req.session.user_id==null) {
-        req.connection.destroy();
-        res.status = 404;
-        res.end('fail');
-    }
+    if(req.session.user_id==null) res.end('fail');
     else{
         Client.connect('mongodb://localhost:27017/dropbox', function(error, db) {
             if(error) console.log(error);
